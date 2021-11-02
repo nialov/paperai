@@ -8,7 +8,8 @@ import unittest
 # pylint: disable=E0401
 from paperai.vectors import RowIterator, Vectors
 
-from utils import Utils
+from tests.utils import Utils
+
 
 class TestVectors(unittest.TestCase):
     """

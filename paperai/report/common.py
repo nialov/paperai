@@ -9,6 +9,7 @@ from txtai.pipeline import Extractor, Similarity
 from ..index import Index
 from ..query import Query
 
+
 class Report(object):
     """
     Methods to build reports from a series of queries
@@ -36,10 +37,14 @@ class Report(object):
 
         # Extractive question-answering model
         # Determine if embeddings or a custom similarity model should be used to build question context
-        self.extractor = Extractor(Similarity(options["similarity"]) if "similarity" in options else self.embeddings,
-                                   options["qa"] if options["qa"] else "NeuML/bert-small-cord19qa",
-                                   minscore=options.get("minscore"),
-                                   mintokens=options.get("mintokens"))
+        self.extractor = Extractor(
+            Similarity(options["similarity"])
+            if "similarity" in options
+            else self.embeddings,
+            options["qa"] if options["qa"] else "NeuML/bert-small-cord19qa",
+            minscore=options.get("minscore"),
+            mintokens=options.get("mintokens"),
+        )
 
     def build(self, queries, options, output):
         """
@@ -65,7 +70,9 @@ class Report(object):
             self.separator(output)
 
             # Query for best matches
-            results = Query.search(self.embeddings, self.cur, query, topn, options.get("threshold"))
+            results = Query.search(
+                self.embeddings, self.cur, query, topn, options.get("threshold")
+            )
 
             # Generate highlights section
             self.section(output, "Highlights")
@@ -102,7 +109,9 @@ class Report(object):
         for highlight in Query.highlights(results, topn):
             # Get matching article
             uid = [article for _, _, article, text in results if text == highlight][0]
-            self.cur.execute("SELECT Authors, Reference FROM articles WHERE id = ?", [uid])
+            self.cur.execute(
+                "SELECT Authors, Reference FROM articles WHERE id = ?", [uid]
+            )
             article = self.cur.fetchone()
 
             # Write out highlight row
@@ -123,15 +132,20 @@ class Report(object):
         _, query, _ = metadata
 
         # Retrieve list of documents
-        documents = Query.all(self.cur) if query == "*" else Query.documents(results, topn)
+        documents = (
+            Query.all(self.cur) if query == "*" else Query.documents(results, topn)
+        )
 
         # Collect matching rows
         rows = []
 
         for uid in documents:
             # Get article metadata
-            self.cur.execute("SELECT Published, Title, Reference, Publication, Source, Design, Size, Sample, Method, Entry " +
-                             "FROM articles WHERE id = ?", [uid])
+            self.cur.execute(
+                "SELECT Published, Title, Reference, Publication, Source, Design, Size, Sample, Method, Entry "
+                + "FROM articles WHERE id = ?",
+                [uid],
+            )
             article = self.cur.fetchone()
 
             # Calculate derived fields
@@ -189,14 +203,18 @@ class Report(object):
                 topn = [text for _, text, _ in results[x]][:matches]
 
                 # Join results into String and return
-                fields[name] = "\n\n".join([self.resolve(params, sections, uid, name, value) for value in topn])
+                fields[name] = "\n\n".join(
+                    [self.resolve(params, sections, uid, name, value) for value in topn]
+                )
             else:
                 fields[name] = None
 
         # Add extraction fields
         for name, value in self.extractor(questions, texts):
             # Resolves the full value based on column parameters
-            fields[name] = self.resolve(params, sections, uid, name, value) if value else ""
+            fields[name] = (
+                self.resolve(params, sections, uid, name, value) if value else ""
+            )
 
         return fields
 
@@ -228,7 +246,11 @@ class Report(object):
             elif "query" in column:
                 # Query variable substitutions
                 query = self.variables(column["query"], metadata)
-                question = self.variables(column["question"], metadata) if "question" in column else query
+                question = (
+                    self.variables(column["question"], metadata)
+                    if "question" in column
+                    else query
+                )
 
                 # Additional context parameters
                 section = column["section"] if "section" in column else False
@@ -237,7 +259,17 @@ class Report(object):
                 snippet = column["snippet"] if "snippet" in column else False
                 snippet = True if section or surround else snippet
 
-                params.append((column["name"], query, question, snippet, section, surround, matches))
+                params.append(
+                    (
+                        column["name"],
+                        query,
+                        question,
+                        snippet,
+                        section,
+                        surround,
+                        matches,
+                    )
+                )
 
         return fields, params
 
@@ -281,7 +313,11 @@ class Report(object):
         # Get list of document text sections
         sections = []
         for sid, name, text in self.cur.fetchall():
-            if not name or not re.search(Index.SECTION_FILTER, name.lower()) or self.options.get("allsections"):
+            if (
+                not name
+                or not re.search(Index.SECTION_FILTER, name.lower())
+                or self.options.get("allsections")
+            ):
                 sections.append((sid, text))
 
         return sections
@@ -336,7 +372,10 @@ class Report(object):
             full text for matching section
         """
 
-        self.cur.execute("SELECT Text FROM sections WHERE article = ? AND name = (SELECT name FROM sections WHERE id = ?)", [uid, sid])
+        self.cur.execute(
+            "SELECT Text FROM sections WHERE article = ? AND name = (SELECT name FROM sections WHERE id = ?)",
+            [uid, sid],
+        )
         return " ".join([x[0] for x in self.cur.fetchall()])
 
     def surround(self, uid, sid, size):
@@ -352,8 +391,11 @@ class Report(object):
             matching text with surrounding context
         """
 
-        self.cur.execute("SELECT Text FROM sections WHERE article = ? AND id in (SELECT id FROM sections WHERE id >= ? AND id <= ?) AND " + \
-                         "name = (SELECT name FROM sections WHERE id = ?)", [uid, sid - size, sid + size, sid])
+        self.cur.execute(
+            "SELECT Text FROM sections WHERE article = ? AND id in (SELECT id FROM sections WHERE id >= ? AND id <= ?) AND "
+            + "name = (SELECT name FROM sections WHERE id = ?)",
+            [uid, sid - size, sid + size, sid],
+        )
 
         return " ".join([x[0] for x in self.cur.fetchall()])
 

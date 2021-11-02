@@ -5,8 +5,14 @@ Models module
 import os
 import os.path
 import sqlite3
+import logging
+from pathlib import Path
 
 from txtai.embeddings import Embeddings
+
+ARTICLES_SQLITE_NAME = "articles.sqlite"
+CONFIG_NAME = "config"
+
 
 class Models(object):
     """
@@ -95,7 +101,7 @@ class Models(object):
         dbfile = os.path.join(path, "articles.sqlite")
 
         if os.path.isfile(os.path.join(path, "config")):
-            print("Loading model from %s" % path)
+            logging.info("Loading model from %s" % path)
             embeddings = Embeddings()
             embeddings.load(path)
         else:
@@ -103,6 +109,41 @@ class Models(object):
 
         # Connect to database file
         db = sqlite3.connect(dbfile)
+
+        return (embeddings, db)
+
+    @staticmethod
+    def load_path(path: Path):
+        """
+        Loads an embeddings model and db database.
+
+        Args:
+            path: model path, if None uses default path
+
+        Returns:
+            (embeddings, db handle)
+        """
+
+        if not path.is_dir():
+            raise FileExistsError(
+                f"Expected path to be a directory with {ARTICLES_SQLITE_NAME} file."
+            )
+
+        articles_path = path / ARTICLES_SQLITE_NAME
+        config_path = path / CONFIG_NAME
+
+        # dbfile = os.path.join(path, "articles.sqlite")
+
+        # if os.path.isfile(os.path.join(path, "config")):
+        if config_path.is_file():
+            logging.info("Loading model from %s" % path)
+            embeddings = Embeddings()
+            embeddings.load(str(path))
+        else:
+            embeddings = None
+
+        # Connect to database file
+        db = sqlite3.connect(articles_path)
 
         return (embeddings, db)
 

@@ -12,6 +12,7 @@ from ..query import Query
 
 from .common import Report
 
+
 class Annotate(Report):
     """
     Report writer for overlaying annotations on source PDFs. This format requires access to original PDFs.
@@ -45,7 +46,16 @@ class Annotate(Report):
         self.names = columns
 
         # Do not annotate following columns
-        for field in ["Date", "Study", "Study Link", "Journal", "Study Type", "Sample Size", "Matches", "Entry"]:
+        for field in [
+            "Date",
+            "Study",
+            "Study Link",
+            "Journal",
+            "Study Type",
+            "Sample Size",
+            "Matches",
+            "Entry",
+        ]:
             if field in self.names:
                 self.names.remove(field)
 

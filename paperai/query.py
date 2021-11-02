@@ -14,6 +14,7 @@ from txtai.pipeline import Tokenizer
 from .highlights import Highlights
 from .models import Models
 
+
 class Query(object):
     """
     Methods to query an embeddings index.
@@ -93,7 +94,9 @@ class Query(object):
             text = Query.markdown(text)
             text = Query.escape(text)
 
-        text = mdv.main(text, theme=theme, c_theme="953.3567", cols=180, tab_length=tab_length)
+        text = mdv.main(
+            text, theme=theme, c_theme="953.3567", cols=180, tab_length=tab_length
+        )
 
         if html:
             text = Query.unescape(text)
@@ -126,8 +129,16 @@ class Query(object):
         results = []
 
         # Get list of required and prohibited tokens
-        must = [token.strip("+") for token in query.split() if token.startswith("+") and len(token) > 1]
-        mnot = [token.strip("-") for token in query.split() if token.startswith("-") and len(token) > 1]
+        must = [
+            token.strip("+")
+            for token in query.split()
+            if token.startswith("+") and len(token) > 1
+        ]
+        mnot = [
+            token.strip("-")
+            for token in query.split()
+            if token.startswith("-") and len(token) > 1
+        ]
 
         # Tokenize search query
         query = Tokenizer.tokenize(query)
@@ -143,8 +154,11 @@ class Query(object):
                 # Add result if:
                 #   - all required tokens are present or there are not required tokens AND
                 #   - all prohibited tokens are not present or there are not prohibited tokens
-                if (not must or all([token.lower() in text.lower() for token in must])) and (
-                    not mnot or all([token.lower() not in text.lower() for token in mnot])
+                if (
+                    not must or all([token.lower() in text.lower() for token in must])
+                ) and (
+                    not mnot
+                    or all([token.lower() not in text.lower() for token in mnot])
                 ):
                     # Save result
                     results.append((uid, score, sid, text))
@@ -201,7 +215,9 @@ class Query(object):
             documents[uid] = sorted(list(documents[uid]), reverse=True)
 
         # Get documents with top n best sections
-        topn = sorted(documents, key=lambda k: max([x[0] for x in documents[k]]), reverse=True)[:topn]
+        topn = sorted(
+            documents, key=lambda k: max([x[0] for x in documents[k]]), reverse=True
+        )[:topn]
         return {uid: documents[uid] for uid in topn}
 
     @staticmethod
@@ -302,9 +318,18 @@ class Query(object):
         """
 
         # Study design type mapping
-        mapping = {1:"Systematic review", 2:"Randomized control trial", 3:"Non-randomized trial",
-                   4:"Prospective observational", 5:"Time-to-event analysis", 6:"Retrospective observational",
-                   7:"Cross-sectional", 8:"Case series", 9:"Modeling", 0:"Other"}
+        mapping = {
+            1: "Systematic review",
+            2: "Randomized control trial",
+            3: "Non-randomized trial",
+            4: "Prospective observational",
+            5: "Time-to-event analysis",
+            6: "Retrospective observational",
+            7: "Cross-sectional",
+            8: "Case series",
+            9: "Modeling",
+            0: "Other",
+        }
 
         return mapping[design]
 
@@ -341,7 +366,7 @@ class Query(object):
 
         cur = db.cursor()
 
-        print(Query.render("#Query: %s" % query, theme="729.8953") + "\n")
+        # print(Query.render("#Query: %s" % query, theme="729.8953") + "\n")
 
         # Query for best matches
         results = Query.search(embeddings, cur, query, topn, threshold)
@@ -359,8 +384,13 @@ class Query(object):
         print(Query.render("# Articles") + "\n")
 
         # Print each result, sorted by max score descending
-        for uid in sorted(documents, key=lambda k: sum([x[0] for x in documents[k]]), reverse=True):
-            cur.execute("SELECT Title, Published, Publication, Design, Size, Sample, Method, Entry, Id, Reference FROM articles WHERE id = ?", [uid])
+        for uid in sorted(
+            documents, key=lambda k: sum([x[0] for x in documents[k]]), reverse=True
+        ):
+            cur.execute(
+                "SELECT Title, Published, Publication, Design, Size, Sample, Method, Entry, Id, Reference FROM articles WHERE id = ?",
+                [uid],
+            )
             article = cur.fetchone()
 
             print("Title: %s" % article[0])
@@ -375,7 +405,11 @@ class Query(object):
 
             # Print top matches
             for score, text in documents[uid]:
-                print(Query.render("## - (%.4f): %s" % (score, Query.text(text)), html=False))
+                print(
+                    Query.render(
+                        "## - (%.4f): %s" % (score, Query.text(text)), html=False
+                    )
+                )
 
             print()
 
@@ -400,9 +434,12 @@ class Query(object):
         # Free resources
         Models.close(db)
 
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        Query.run(sys.argv[1],
-                  int(sys.argv[2]) if len(sys.argv) > 2 else None,
-                  sys.argv[3] if len(sys.argv) > 3 else None,
-                  float(sys.argv[4]) if len(sys.argv) > 4 else None)
+        Query.run(
+            sys.argv[1],
+            int(sys.argv[2]) if len(sys.argv) > 2 else None,
+            sys.argv[3] if len(sys.argv) > 3 else None,
+            float(sys.argv[4]) if len(sys.argv) > 4 else None,
+        )

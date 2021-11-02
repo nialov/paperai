@@ -17,6 +17,7 @@ from lxml.html.clean import clean_html
 from paperai.models import Models
 from paperai.query import Query
 
+
 class Application:
     """
     Streamlit application.
@@ -28,8 +29,17 @@ class Application:
         """
 
         # Default list of columns
-        self.columns = [("Title", True), ("Published", False), ("Publication", False), ("Design", False), ("Sample", False),
-                        ("Method", False), ("Entry", False), ("Id", False), ("Content", True)]
+        self.columns = [
+            ("Title", True),
+            ("Published", False),
+            ("Publication", False),
+            ("Design", False),
+            ("Sample", False),
+            ("Method", False),
+            ("Entry", False),
+            ("Id", False),
+            ("Content", True),
+        ]
 
         # Load model
         self.path = path
@@ -57,18 +67,31 @@ class Application:
             articles = []
 
             # Print each result, sorted by max score descending
-            for uid in sorted(documents, key=lambda k: sum([x[0] for x in documents[k]]), reverse=True):
-                cur.execute("SELECT Title, Published, Publication, Design, Size, Sample, Method, Entry, Id, Reference " +
-                            "FROM articles WHERE id = ?", [uid])
+            for uid in sorted(
+                documents, key=lambda k: sum([x[0] for x in documents[k]]), reverse=True
+            ):
+                cur.execute(
+                    "SELECT Title, Published, Publication, Design, Size, Sample, Method, Entry, Id, Reference "
+                    + "FROM articles WHERE id = ?",
+                    [uid],
+                )
                 article = cur.fetchone()
 
                 matches = "<br/>".join([text for _, text in documents[uid]])
 
                 title = "<a target='_blank' href='%s'>%s</a>" % (article[9], article[0])
 
-                article = {"Title": title, "Published": Query.date(article[1]), "Publication": article[2], "Design": Query.design(article[3]),
-                           "Sample": Query.sample(article[4], article[5]), "Method": Query.text(article[6]), "Entry": article[7],
-                           "Id": article[8], "Content": matches}
+                article = {
+                    "Title": title,
+                    "Published": Query.date(article[1]),
+                    "Publication": article[2],
+                    "Design": Query.design(article[3]),
+                    "Sample": Query.sample(article[4], article[5]),
+                    "Method": Query.text(article[6]),
+                    "Entry": article[7],
+                    "Id": article[8],
+                    "Content": matches,
+                }
 
                 articles.append(article)
 
@@ -79,7 +102,9 @@ class Application:
         Runs Streamlit application.
         """
 
-        st.sidebar.image("https://github.com/neuml/paperai/raw/master/logo.png", width=256)
+        st.sidebar.image(
+            "https://github.com/neuml/paperai/raw/master/logo.png", width=256
+        )
         st.sidebar.markdown("## Search parameters")
 
         # Search parameters
@@ -87,16 +112,28 @@ class Application:
         topn = st.sidebar.number_input("topn", value=10)
         threshold = st.sidebar.slider("threshold", 0.0, 1.0, 0.6)
 
-        st.markdown("<style>.small-font { font-size: 0.8rem !important;}</style>", unsafe_allow_html=True)
-        st.sidebar.markdown("<p class='small-font'>Select columns</p>", unsafe_allow_html=True)
-        columns = [column for column, enabled in self.columns if st.sidebar.checkbox(column, enabled)]
+        st.markdown(
+            "<style>.small-font { font-size: 0.8rem !important;}</style>",
+            unsafe_allow_html=True,
+        )
+        st.sidebar.markdown(
+            "<p class='small-font'>Select columns</p>", unsafe_allow_html=True
+        )
+        columns = [
+            column
+            for column, enabled in self.columns
+            if st.sidebar.checkbox(column, enabled)
+        ]
         if self.embeddings and query:
             df = self.search(query, topn, threshold)
-            st.markdown("<p class='small-font'>%d results</p>" % len(df), unsafe_allow_html=True)
+            st.markdown(
+                "<p class='small-font'>%d results</p>" % len(df), unsafe_allow_html=True
+            )
 
             if not df.empty:
                 html = df[columns].to_html(escape=False, index=False)
                 st.write(clean_html(html), unsafe_allow_html=True)
+
 
 @st.cache(allow_output_mutation=True)
 def create(path):

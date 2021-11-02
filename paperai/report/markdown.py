@@ -6,6 +6,7 @@ from ..query import Query
 
 from .common import Report
 
+
 class Markdown(Report):
     """
     Report writer for Markdown.
@@ -58,7 +59,10 @@ class Markdown(Report):
 
     def highlight(self, output, article, highlight):
         # Build citation link
-        link = "[%s](%s)" % (Query.authors(article[0]) if article[0] else "Source", self.encode(article[1]))
+        link = "[%s](%s)" % (
+            Query.authors(article[0]) if article[0] else "Source",
+            self.encode(article[1]),
+        )
 
         # Build highlight row with citation link
         self.write(output, "- %s %s<br/>" % (Query.text(highlight), link))
@@ -108,7 +112,11 @@ class Markdown(Report):
         row["Study Population"] = Query.text(article[8]) if article[8] else ""
 
         # Top Matches
-        row["Matches"] = "<br/><br/>".join([Query.text(text) for _, text in sections]) if sections else ""
+        row["Matches"] = (
+            "<br/><br/>".join([Query.text(text) for _, text in sections])
+            if sections
+            else ""
+        )
 
         # Entry Date
         row["Entry"] = article[9] if article[9] else ""

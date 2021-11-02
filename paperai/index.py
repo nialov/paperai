@@ -14,6 +14,7 @@ from txtai.pipeline import Tokenizer
 
 from .models import Models
 
+
 class Index(object):
     """
     Methods to build a new sentence embeddings index.
@@ -41,7 +42,10 @@ class Index(object):
         query = Index.SECTION_QUERY + " AND tags is not null"
 
         if maxsize > 0:
-            query += " AND article in (SELECT id FROM articles ORDER BY entry DESC LIMIT %d)" % maxsize
+            query += (
+                " AND article in (SELECT id FROM articles ORDER BY entry DESC LIMIT %d)"
+                % maxsize
+            )
 
         # Run the query
         cur.execute(query)
@@ -140,7 +144,10 @@ class Index(object):
         embeddings = Index.embeddings(dbfile, vectors, maxsize)
         embeddings.save(path)
 
+
 if __name__ == "__main__":
-    Index.run(sys.argv[1] if len(sys.argv) > 1 else None,
-              sys.argv[2] if len(sys.argv) > 2 else None,
-              int(sys.argv[3]) if len(sys.argv) > 3 else 0)
+    Index.run(
+        sys.argv[1] if len(sys.argv) > 1 else None,
+        sys.argv[2] if len(sys.argv) > 2 else None,
+        int(sys.argv[3]) if len(sys.argv) > 3 else 0,
+    )

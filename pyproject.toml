@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "paperai"
+version = "1.11.0"
+description = "AI-powered literature discovery and review engine for medical/scientific papers"
+authors = ["nialov <nikolasovaskainen@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+paperai = "paperai.cli:app"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+html2markdown = "^0.1.7"
+mdv3 = "^2.0.1"
+networkx = "^2.4"
+PyYAML = "^5.3"
+regex = "^2020.5.14"
+txtai = {version = "^3.4.0", extras = ["api", "similarity"]}
+txtmarker = "^1.0.0"
+nltk = "3.6.2"
+typer = "^0.4.0"
+beartype = "^0.9.0"
+nialog = "^0.0.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

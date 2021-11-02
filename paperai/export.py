@@ -14,6 +14,7 @@ import regex as re
 from .index import Index
 from .models import Models
 
+
 class Export(object):
     """
     Exports database rows into a text file line-by-line.
@@ -72,6 +73,7 @@ class Export(object):
 
         # Stream text from database to file
         Export.stream(dbfile, output)
+
 
 if __name__ == "__main__":
     # Export data
