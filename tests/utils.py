@@ -4,6 +4,8 @@ Utils module
 
 import hashlib
 
+from pathlib import Path
+
 
 class Utils(object):
     """
@@ -29,3 +31,12 @@ class Utils(object):
         with open(path, "r") as data:
             # Read file into string and build MD5 hash
             return hashlib.md5(data.read().encode()).hexdigest()
+
+
+TEST_DIR_PATH = Path(Utils.PATH)
+
+if (not TEST_DIR_PATH.exists()) and (not TEST_DIR_PATH.is_dir()):
+    raise FileNotFoundError(
+        f"Expected test data dir to exist at {TEST_DIR_PATH}.\n"
+        "Run:\n    make data\nto install needed test data."
+    )

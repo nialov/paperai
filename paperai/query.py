@@ -366,7 +366,7 @@ class Query(object):
 
         cur = db.cursor()
 
-        # print(Query.render("#Query: %s" % query, theme="729.8953") + "\n")
+        print(Query.render("#Query: %s" % query, theme="729.8953") + "\n")
 
         # Query for best matches
         results = Query.search(embeddings, cur, query, topn, threshold)

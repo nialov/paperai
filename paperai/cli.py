@@ -4,7 +4,7 @@ Command-line with typer.
 from .models import Models
 from .query import Query
 from paperai import utils
-from typing import Dict, List, Tuple, Optional, Union, Any
+from typing import List, Tuple, Optional
 from json import dumps
 from pathlib import Path
 from beartype import beartype
@@ -19,14 +19,12 @@ from rich.pretty import pprint
 import warnings
 
 
-
 app = typer.Typer()
 
 
 @app.callback()
 def app_callback(
     logging_level: utils.LoggingLevel = typer.Option(utils.LoggingLevel.WARNING.value),
-
 ):
     # Ignore warning:
     # Trying to unpickle estimator TruncatedSVD from version 0.24.2 when using
@@ -34,8 +32,9 @@ def app_callback(
     # your own risk. For more info please refer to: #
     # https://scikit-learn.org/stable/modules/model_persistence.html
     # #security-maintainability-limitations
-    warnings.filterwarnings("ignore",message=".*Trying to unpickle.*",
-                category=UserWarning)
+    warnings.filterwarnings(
+        "ignore", message=".*Trying to unpickle.*", category=UserWarning
+    )
     setup_module_logging(logging_level_int=int(logging_level.value))
 
 
@@ -56,7 +55,11 @@ def load_model(model_path: Path) -> Tuple[Embeddings, Connection]:
 
 @beartype
 def query_for_results(
-        embeddings: Embeddings, cur: Cursor, query_text: str, n: int, threshold:Optional[float]
+    embeddings: Embeddings,
+    cur: Cursor,
+    query_text: str,
+    n: int,
+    threshold: Optional[float],
 ) -> List[Tuple[int, float, str, str]]:
     """
     Query search for best matches.
@@ -64,32 +67,37 @@ def query_for_results(
     results = Query.search(embeddings, cur, query_text, n, threshold=threshold)
     return results
 
-def rich_print(all_results:List[utils.QueryResults]):
+
+def rich_print(all_results: List[utils.QueryResults]):
     """
     Print result output with rich.
     """
     if len(all_results) == 0:
         return
     # sort results by score
-    sorted_results = sorted(all_results, key=lambda result:result.score, reverse=True)
-    column_names = ( "text", "score", "title" )
+    sorted_results = sorted(all_results, key=lambda result: result.score, reverse=True)
+    column_names = ("text", "score", "title")
     table = Table(title="Query results", show_lines=True)
 
     for column_name in column_names:
         table.add_column(column_name)
 
     for result in sorted_results:
-        table.add_row(*list(map(str, [getattr(result, column_name) for column_name in column_names])))
+        table.add_row(
+            *list(
+                map(str, [getattr(result, column_name) for column_name in column_names])
+            )
+        )
 
     console = Console()
 
     console.print(table)
 
 
-
-
 @beartype
-def model_query(query_text: str, model_path: Path, n: int = 10, threshold:Optional[float] = None) -> List[utils.QueryResults]:
+def model_query(
+    query_text: str, model_path: Path, n: int = 10, threshold: Optional[float] = None
+) -> List[utils.QueryResults]:
     """
     Query model for results.
     """
@@ -128,7 +136,6 @@ def model_query(query_text: str, model_path: Path, n: int = 10, threshold:Option
             query_results = utils.QueryResults(**full_result_dict)
             all_results.append(query_results)
 
-
     return all_results
 
 
@@ -138,22 +145,21 @@ def query_model(
     model_path: Path = typer.Option(Models.modelPath(), dir_okay=True, exists=True),
     n: int = typer.Option(10),
     output_type: utils.OutputType = typer.Option(utils.OutputType.JSON.value),
-    score_threshold:Optional[float] = typer.Option(None),
+    score_threshold: Optional[float] = typer.Option(None),
 ):
     argument_dict = dict(model_path=model_path, n=n, output_type=output_type)
     if len(text) == 0:
         logging.warning("Empty text argument.", extra=argument_dict)
         return
-    query_results = model_query(query_text=text, model_path=model_path, n=n, threshold=score_threshold)
+    query_results = model_query(
+        query_text=text, model_path=model_path, n=n, threshold=score_threshold
+    )
 
     if output_type == utils.OutputType.JSON:
         dictified = [result.__dict__ for result in query_results]
         pprint(dumps(dictified, indent=1))
     elif output_type == utils.OutputType.RICH:
         rich_print(query_results)
-
-
-
 
 
 @app.command()
