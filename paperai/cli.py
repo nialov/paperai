@@ -96,12 +96,11 @@ def rich_print(all_results: List[utils.QueryResults]):
 
 @beartype
 def model_query(
-    query_text: str, model_path: Path, n: int = 10, threshold: Optional[float] = None
+        query_text: str,embeddings:Embeddings,db:Connection, n: int = 10, threshold: Optional[float] = None
 ) -> List[utils.QueryResults]:
     """
     Query model for results.
     """
-    embeddings, db = load_model(model_path=model_path)
     # Query.query(embeddings, db, line, None, None)
 
     cur = db.cursor()
@@ -151,8 +150,9 @@ def query_model(
     if len(text) == 0:
         logging.warning("Empty text argument.", extra=argument_dict)
         return
+    embeddings, db = load_model(model_path=model_path)
     query_results = model_query(
-        query_text=text, model_path=model_path, n=n, threshold=score_threshold
+        query_text=text, model_path=model_path, n=n, threshold=score_threshold, embeddings=embeddings, db=db
     )
 
     if output_type == utils.OutputType.JSON:

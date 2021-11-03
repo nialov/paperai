@@ -22,6 +22,7 @@ typer = "^0.4.0"
 beartype = "^0.9.0"
 nialog = "^0.0.1"
 rich = "^10.12.0"
+fastapi = {extras = ["all"], version = "^0.70.0"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

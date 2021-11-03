@@ -4,6 +4,7 @@ General utilities.
 from enum import Enum, unique
 import logging
 from dataclasses import dataclass
+import pydantic
 
 
 @unique
@@ -31,3 +32,4 @@ class QueryResults:
     entry: str
     id: str
     reference: str
+
