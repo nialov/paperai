@@ -3,28 +3,26 @@ Report module
 """
 
 import regex as re
-
 from txtai.pipeline import Extractor, Similarity
 
 from ..index import Index
 from ..query import Query
 
 
-class Report(object):
+class Report:
     """
     Methods to build reports from a series of queries
     """
 
     def __init__(self, embeddings, db, options):
         """
-        Creates a new report.
+        Create a new report.
 
         Args:
             embeddings: embeddings index
             db: database connection
             options: report options
         """
-
         # Store references to embeddings index and open database cursor
         self.embeddings = embeddings
         self.cur = db.cursor()
@@ -35,8 +33,8 @@ class Report(object):
         # Column names
         self.names = []
 
-        # Extractive question-answering model
-        # Determine if embeddings or a custom similarity model should be used to build question context
+        # Extractive question-answering model # Determine if embeddings or a
+        # custom similarity model should be used to build question context
         self.extractor = Extractor(
             Similarity(options["similarity"])
             if "similarity" in options
@@ -48,14 +46,13 @@ class Report(object):
 
     def build(self, queries, options, output):
         """
-        Builds a report using a list of input queries
+        Build a report using a list of input queries.
 
         Args:
             queries: queries to execute
             options: report options
             output: output I/O object
         """
-
         # Default to 50 documents if not specified
         topn = options.get("topn", 50)
 
@@ -97,14 +94,13 @@ class Report(object):
 
     def highlights(self, output, results, topn):
         """
-        Builds a highlights section.
+        Build a highlights section.
 
         Args:
             output: output file
             results: search results
             topn: number of results to return
         """
-
         # Extract top sections as highlights
         for highlight in Query.highlights(results, topn):
             # Get matching article
@@ -119,7 +115,7 @@ class Report(object):
 
     def articles(self, output, topn, metadata, results):
         """
-        Builds an articles section.
+        Build an articles section.
 
         Args:
             output: output file
@@ -127,7 +123,6 @@ class Report(object):
             metadata: query metadata
             results: search results
         """
-
         # Unpack metadata
         _, query, _ = metadata
 
@@ -142,7 +137,8 @@ class Report(object):
         for uid in documents:
             # Get article metadata
             self.cur.execute(
-                "SELECT Published, Title, Reference, Publication, Source, Design, Size, Sample, Method, Entry "
+                "SELECT Published, Title, Reference, Publication, "
+                "Source, Design, Size, Sample, Method, Entry "
                 + "FROM articles WHERE id = ?",
                 [uid],
             )
@@ -164,10 +160,12 @@ class Report(object):
 
     def calculate(self, uid, metadata):
         """
-        Builds a dict of calculated fields for a given document. This method calculates
-        constant field columns and derived query columns. Derived query columns run through
-        an embedding search and either run an additional QA query to extract a value or
-        use the top n embedding search matches.
+        Build a dict of calculated fields for a given document.
+
+        This method calculates constant field columns and derived query
+        columns. Derived query columns run through an embedding search and
+        either run an additional QA query to extract a value or use the top n
+        embedding search matches.
 
         Args:
             uid: article id
@@ -176,7 +174,6 @@ class Report(object):
         Returns:
             {name: value} containing derived column values
         """
-
         # Parse column parameters
         fields, params = self.params(metadata)
 
@@ -228,7 +225,6 @@ class Report(object):
         Returns:
             fields, params - constant field values, query parameters for query columns
         """
-
         # Derived field values
         fields = {}
 
@@ -275,7 +271,7 @@ class Report(object):
 
     def variables(self, value, metadata):
         """
-        Runs variable substitution for value.
+        Run variable substitution for value.
 
         Args:
             value: input value
@@ -284,7 +280,6 @@ class Report(object):
         Returns:
             value with variable substitution
         """
-
         name, query, _ = metadata
 
         # Cleanup name for queries
@@ -298,7 +293,7 @@ class Report(object):
 
     def sections(self, uid):
         """
-        Retrieves all sections as list for article with given uid.
+        Retrieve all sections as list for article with given uid.
 
         Args:
             uid: article id
@@ -306,7 +301,6 @@ class Report(object):
         Returns:
             list of section text elements
         """
-
         # Retrieve indexed document text for article
         self.cur.execute(Index.SECTION_QUERY + " AND article = ? ORDER BY id", [uid])
 
@@ -324,7 +318,7 @@ class Report(object):
 
     def resolve(self, params, sections, uid, name, value):
         """
-        Fully resolves a value from an extractor call.
+        Fully resolve a value from an extractor call.
 
          - If section=True, this method pull the full section text
          - If surround is specified, this method will pull the surrounding text
@@ -340,7 +334,6 @@ class Report(object):
         Returns:
             resolved value
         """
-
         # Get all column parameters
         index = [params.index(x) for x in params if x[0] == name][0]
         _, _, _, _, section, surround, _ = params[index]
@@ -362,7 +355,7 @@ class Report(object):
 
     def subsection(self, uid, sid):
         """
-        Extracts all subsection text for columns with section=True.
+        Extract all subsection text for columns with section=True.
 
         Args:
             uid: article id
@@ -371,16 +364,16 @@ class Report(object):
         Returns:
             full text for matching section
         """
-
         self.cur.execute(
-            "SELECT Text FROM sections WHERE article = ? AND name = (SELECT name FROM sections WHERE id = ?)",
+            "SELECT Text FROM sections WHERE article = ? "
+            "AND name = (SELECT name FROM sections WHERE id = ?)",
             [uid, sid],
         )
         return " ".join([x[0] for x in self.cur.fetchall()])
 
     def surround(self, uid, sid, size):
         """
-        Extracts surrounding text for section with specified id.
+        Extract surrounding text for section with specified id.
 
         Args:
             uid: article id
@@ -390,9 +383,9 @@ class Report(object):
         Returns:
             matching text with surrounding context
         """
-
         self.cur.execute(
-            "SELECT Text FROM sections WHERE article = ? AND id in (SELECT id FROM sections WHERE id >= ? AND id <= ?) AND "
+            "SELECT Text FROM sections WHERE article = ? "
+            "AND id in (SELECT id FROM sections WHERE id >= ? AND id <= ?) AND "
             + "name = (SELECT name FROM sections WHERE id = ?)",
             [uid, sid - size, sid + size, sid],
         )
@@ -409,7 +402,7 @@ class Report(object):
 
     def query(self, output, task, query):
         """
-        Writes query.
+        Write query.
 
         Args:
             output: output file
@@ -419,7 +412,7 @@ class Report(object):
 
     def section(self, output, name):
         """
-        Writes a section name
+        Write a section name.
 
         Args:
             output: output file
@@ -428,7 +421,7 @@ class Report(object):
 
     def highlight(self, output, article, highlight):
         """
-        Writes a highlight row
+        Write a highlight row.
 
         Args:
             output: output file
@@ -438,7 +431,7 @@ class Report(object):
 
     def headers(self, columns, output):
         """
-        Writes table headers.
+        Write table headers.
 
         Args:
             columns: column names
@@ -447,7 +440,7 @@ class Report(object):
 
     def buildRow(self, article, sections, calculated):
         """
-        Converts a document to a table row.
+        Convert a document to a table row.
 
         Args:
             article: article
@@ -457,7 +450,7 @@ class Report(object):
 
     def writeRow(self, output, row):
         """
-        Writes a table row.
+        Write a table row.
 
         Args:
             output: output file
@@ -466,5 +459,5 @@ class Report(object):
 
     def separator(self, output):
         """
-        Writes a separator between sections
+        Write a separator between sections.
         """

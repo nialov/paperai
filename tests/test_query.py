@@ -4,12 +4,10 @@ Query module tests
 
 import os
 import unittest
-
 from contextlib import redirect_stdout
 
 # pylint: disable=E0401
 from paperai.query import Query
-
 from tests.utils import Utils
 
 

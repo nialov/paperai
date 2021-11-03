@@ -4,15 +4,14 @@ Report factory module
 
 import os.path
 
+from ..models import Models
 from .annotate import Annotate
 from .csvr import CSV
 from .markdown import Markdown
 from .task import Task
 
-from ..models import Models
 
-
-class Execute(object):
+class Execute:
     """
     Creates a Report
     """
@@ -20,6 +19,8 @@ class Execute(object):
     @staticmethod
     def create(render, embeddings, db, options):
         """
+        Construct a Report.
+
         Factory method to construct a Report.
 
         Args:
@@ -31,7 +32,6 @@ class Execute(object):
         Returns:
             Report
         """
-
         if render == "ant":
             return Annotate(embeddings, db, options)
         elif render == "csv":
@@ -46,18 +46,18 @@ class Execute(object):
         task, topn=None, render=None, path=None, qa=None, indir=None, threshold=None
     ):
         """
-        Reads a list of queries from a task file and builds a report.
+        Read a list of queries from a task file and build a report.
 
         Args:
             task: input task file
             topn: number of results
-            render: report rendering format ("md" for markdown, "csv" for csv, "ant" for pdf annotation)
+            render: report rendering format
+                    ("md"=markdown, "csv"=csv, "ant"=pdf annotation)
             path: embeddings model path
             qa: qa model path
             indir: path to input directory containing source files
             threshold: query match score threshold
         """
-
         # Load model
         embeddings, db = Models.load(path)
 
@@ -90,12 +90,15 @@ class Execute(object):
     @staticmethod
     def options(options, topn, render, path, qa, indir, threshold):
         """
-        Combine report and command line options with command line options taking precedence.
+        Combine report and command line options.
+
+        Command line options take precedence.
 
         Args:
             options: report options
             topn: number of results
-            render: report rendering format ("md" for markdown, "csv" for csv, "ant" for pdf annotation)
+            render: report rendering format
+                    ("md" for markdown, "csv" for csv, "ant" for pdf annotation)
             path: embeddings model path
             qa: qa model path
             indir: path to input directory containing source files
@@ -104,7 +107,6 @@ class Execute(object):
         Returns:
             combined options
         """
-
         options["topn"] = topn if topn is not None else options.get("topn")
         options["render"] = render if render else options.get("render")
         options["path"] = path if path else options.get("path")

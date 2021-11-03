@@ -3,11 +3,10 @@ Utils module
 """
 
 import hashlib
-
 from pathlib import Path
 
 
-class Utils(object):
+class Utils:
     """
     Utility constants and methods
     """

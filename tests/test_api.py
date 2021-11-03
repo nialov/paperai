@@ -6,16 +6,13 @@ import os
 import tempfile
 import unittest
 import urllib
-
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-
 from txtai.api import app, start
 
 # pylint: disable=E0401
 from paperai.index import Index
-
 from tests.utils import Utils
 
 # Configuration for a paperai index

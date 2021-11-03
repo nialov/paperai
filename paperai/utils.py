@@ -1,14 +1,18 @@
 """
 General utilities.
 """
-from enum import Enum, unique
 import logging
 from dataclasses import dataclass
-import pydantic
+from enum import Enum, unique
 
 
 @unique
 class LoggingLevel(Enum):
+
+    """
+    Logging level enums.
+    """
+
     DEBUG = str(logging.DEBUG)
     INFO = str(logging.INFO)
     WARNING = str(logging.WARNING)
@@ -18,12 +22,22 @@ class LoggingLevel(Enum):
 
 @unique
 class OutputType(Enum):
+
+    """
+    Output type enums.
+    """
+
     JSON = "JSON"
     RICH = "RICH"
 
 
 @dataclass
 class QueryResults:
+
+    """
+    Query result dataclass.
+    """
+
     score: float
     text: str
     title: str
@@ -32,4 +46,3 @@ class QueryResults:
     entry: str
     id: str
     reference: str
-

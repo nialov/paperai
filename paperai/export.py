@@ -15,7 +15,7 @@ from .index import Index
 from .models import Models
 
 
-class Export(object):
+class Export:
     """
     Exports database rows into a text file line-by-line.
     """
@@ -23,19 +23,19 @@ class Export(object):
     @staticmethod
     def stream(dbfile, output):
         """
-        Iterates over each row in dbfile and writes text to output file
+        Iterate over each row in dbfile and write text to output file.
 
         Args:
             dbfile: SQLite file to read
             output: output file to store text
         """
-
-        with open(output, "w") as output:
+        with open(output, "w", encoding="utf-8") as open_output:
             # Connection to database file
             db = sqlite3.connect(dbfile)
             cur = db.cursor()
 
-            # Get all indexed text, with a detected study design, excluding modeling designs
+            # Get all indexed text, with a detected study design, excluding
+            # modeling designs
             cur.execute(Index.SECTION_QUERY + " AND design NOT IN (0, 9)")
 
             count = 0
@@ -43,13 +43,15 @@ class Export(object):
                 if not name or not re.search(Index.SECTION_FILTER, name.lower()):
                     count += 1
                     if count % 1000 == 0:
-                        print("Streamed %d documents" % (count), end="\r")
+                        # print("Streamed %d documents" % (count), end="\r")
+                        print(f"Streamed {count} documents")
 
                     # Write row
                     if text:
-                        output.write(text + "\n")
+                        open_output.write(text + "\n")
 
-            print("Iterated over %d total rows" % (count))
+            # print("Iterated over %d total rows" % (count))
+            print(f"Iterated over {count} total rows.")
 
             # Free database resources
             db.close()
@@ -57,13 +59,12 @@ class Export(object):
     @staticmethod
     def run(output, path):
         """
-        Exports data from database to text file, line by line.
+        Export data from database to text file, line by line.
 
         Args:
             output: output file path
             path: model path, if None uses default path
         """
-
         # Default path if not provided
         if not path:
             path = Models.modelPath()

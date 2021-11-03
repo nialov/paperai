@@ -8,7 +8,8 @@ from .execute import Execute
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        # Run report with params: input file, topn, render format, embeddings model path, qa model path, threshold
+        # Run report with params: input file, topn, render
+        # format, embeddings model path, qa model path, threshold
         Execute.run(
             sys.argv[1],
             int(sys.argv[2]) if len(sys.argv) > 2 else None,

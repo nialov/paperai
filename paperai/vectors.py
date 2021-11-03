@@ -14,19 +14,18 @@ from txtai.vectors import WordVectors
 from .models import Models
 
 
-class RowIterator(object):
+class RowIterator:
     """
     Iterates over rows in a database query. Allows for multiple iterations.
     """
 
     def __init__(self, dbfile):
         """
-        Initializes RowIterator.
+        Initialize RowIterator.
 
         Args:
             dbfile: path to SQLite file
         """
-
         # Store database file
         self.dbfile = dbfile
 
@@ -34,38 +33,34 @@ class RowIterator(object):
 
     def __iter__(self):
         """
-        Creates a database query generator.
+        Create a database query generator.
 
         Returns:
             generator
         """
-
         # reset the generator
         self.rows = self.stream(self.dbfile)
         return self
 
     def __next__(self):
         """
-        Gets the next result in the current generator.
+        Go to the next result in the current generator.
 
         Returns:
             tokens
         """
-
         result = next(self.rows)
         if result is None:
             raise StopIteration
-        else:
-            return result
+        return result
 
     def stream(self, dbfile):
         """
-        Connects to SQLite file at dbfile and yields parsed tokens for each row.
+        Connect to SQLite file at dbfile and yield parsed tokens for each row.
 
         Args:
             dbfile:
         """
-
         # Connection to database file
         db = sqlite3.connect(dbfile)
         cur = db.cursor()
@@ -78,20 +73,22 @@ class RowIterator(object):
             tokens = Tokenizer.tokenize(section[0])
 
             count += 1
-            if count % 1000 == 0:
-                print("Streamed %d documents" % (count), end="\r")
+            # if count % 1000 == 0:
+            #     # print("Streamed %d documents" % (count), end="\r")
+            #     print(f"Streamed {count} documents.")
 
             # Skip documents with no tokens parsed
             if tokens:
                 yield tokens
 
-        print("Iterated over %d total rows" % (count))
+        # print("Iterated over %d total rows" % (count))
+        print(f"Iterated over {count} total rows.")
 
         # Free database resources
         db.close()
 
 
-class Vectors(object):
+class Vectors:
     """
     Methods to build a FastText model.
     """
@@ -99,7 +96,9 @@ class Vectors(object):
     @staticmethod
     def tokens(dbfile):
         """
-        Iterates over each row in dbfile and writes parsed tokens to a temporary file for processing.
+        Iterate over each row in dbfile and write parsed tokens.
+
+        Writes to a temporary file for processing.
 
         Args:
             dbfile: SQLite file to read
@@ -107,7 +106,6 @@ class Vectors(object):
         Returns:
             path to output file
         """
-
         tokens = None
 
         # Stream tokens to temp working file
@@ -125,7 +123,7 @@ class Vectors(object):
     @staticmethod
     def run(path, size, mincount, output):
         """
-        Builds a word vector model.
+        Build a word vector model.
 
         Args:
             path: model path, if None uses default path
@@ -133,7 +131,6 @@ class Vectors(object):
             mincount: minimum number of times a token must appear in input
             output: output file path, if None uses default path
         """
-
         # Default path if not provided
         if not path:
             path = Models.modelPath()
@@ -146,7 +143,8 @@ class Vectors(object):
 
         if not output:
             # Output file path
-            output = Models.vectorPath("cord19-%dd" % size, True)
+            # output = Models.vectorPath("cord19-%dd" % size, True)
+            output = Models.vectorPath(f"cord19-{size}d", True)
 
         # Build word vectors model
         WordVectors.build(tokens, size, mincount, output)

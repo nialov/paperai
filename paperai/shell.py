@@ -7,7 +7,6 @@ from cmd import Cmd
 
 from .models import Models
 from .query import Query
-from json import dumps
 
 
 class Shell(Cmd):
@@ -16,7 +15,10 @@ class Shell(Cmd):
     """
 
     def __init__(self, path):
-        super(Shell, self).__init__()
+        """
+        Initialize Shell.
+        """
+        super().__init__()
 
         self.intro = "paperai query shell"
         self.prompt = "(paperai) "
@@ -26,11 +28,20 @@ class Shell(Cmd):
         self.path = path
 
     def preloop(self):
+        """
+        Do things before loop.
+        """
         # Load embeddings and questions.db
         self.embeddings, self.db = Models.load(self.path)
 
     def postloop(self):
+        """
+        Do things after loop.
+        """
         Models.close(self.db)
 
     def default(self, line):
+        """
+        Do default action.
+        """
         Query.query(self.embeddings, self.db, line, None, None)

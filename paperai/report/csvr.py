@@ -7,7 +7,6 @@ import os
 import os.path
 
 from ..query import Query
-
 from .common import Report
 
 
@@ -17,6 +16,9 @@ class CSV(Report):
     """
 
     def __init__(self, embeddings, db, options):
+        """
+        Create Report writer for CSV exports.
+        """
         super().__init__(embeddings, db, options)
 
         # CSV writer handle
@@ -24,10 +26,16 @@ class CSV(Report):
         self.writer = None
 
     def cleanup(self, outfile):
+        """
+        Delete created master csv file.
+        """
         # Delete created master csv file
         os.remove(outfile)
 
     def query(self, output, task, query):
+        """
+        Close existing file.
+        """
         # Close existing file
         if self.csvout:
             self.csvout.close()
@@ -41,22 +49,27 @@ class CSV(Report):
 
     def write(self, row):
         """
-        Writes line to output file.
+        Write line to output file.
 
         Args:
             line: line to write
         """
-
         # Write csv line
         self.writer.writerow(row)
 
     def headers(self, columns, output):
+        """
+        Write out column names.
+        """
         self.names = columns
 
         # Write out column names
         self.write(self.names)
 
     def buildRow(self, article, sections, calculated):
+        """
+        Build csv row.
+        """
         row = {}
 
         # Date
@@ -100,4 +113,7 @@ class CSV(Report):
         return row
 
     def writeRow(self, output, row):
+        """
+        Write csv row.
+        """
         self.write(row)

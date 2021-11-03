@@ -7,7 +7,6 @@ import unittest
 
 # pylint: disable=E0401
 from paperai.vectors import RowIterator, Vectors
-
 from tests.utils import Utils
 
 

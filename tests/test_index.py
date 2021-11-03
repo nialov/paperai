@@ -6,7 +6,6 @@ import unittest
 
 # pylint: disable=E0401
 from paperai.index import Index
-
 from tests.utils import Utils
 
 

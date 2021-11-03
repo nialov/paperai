@@ -8,14 +8,13 @@ import sys
 
 import html2markdown
 import mdv
-
 from txtai.pipeline import Tokenizer
 
 from .highlights import Highlights
 from .models import Models
 
 
-class Query(object):
+class Query:
     """
     Methods to query an embeddings index.
     """
@@ -23,7 +22,7 @@ class Query(object):
     @staticmethod
     def markdown(text):
         """
-        Converts html text to markdown.
+        Convert html text to markdown.
 
         Args:
             text: html text
@@ -31,7 +30,6 @@ class Query(object):
         Returns:
             text as markdown
         """
-
         # Remove rel attributes as they are not supported by html2markdown
         text = re.sub(r' rel=".+?">', ">", text)
 
@@ -44,7 +42,7 @@ class Query(object):
     @staticmethod
     def escape(text):
         """
-        Escapes text to work around issues with mdv double escaping characters.
+        Escape text to work around issues with mdv double escaping characters.
 
         Args:
             text: input text
@@ -52,7 +50,6 @@ class Query(object):
         Returns:
             escaped text
         """
-
         text = text.replace("<", "¿")
         text = text.replace(">", "Ñ")
         text = text.replace("&", "ž")
@@ -62,7 +59,7 @@ class Query(object):
     @staticmethod
     def unescape(text):
         """
-        Un-escapes text to work around issues with mdv double escaping characters.
+        Un-escape text to work around issues with mdv double escaping characters.
 
         Args:
             text: input text
@@ -70,7 +67,6 @@ class Query(object):
         Returns:
             unescaped text
         """
-
         text = text.replace("¿", "<")
         text = text.replace("Ñ", ">")
         text = text.replace("ž", "&")
@@ -80,7 +76,7 @@ class Query(object):
     @staticmethod
     def render(text, theme="592.2129", html=True, tab_length=0):
         """
-        Renders input text to formatted text ready to send to the terminal.
+        Render input text to formatted text ready to send to the terminal.
 
         Args:
             text: input html text
@@ -88,7 +84,6 @@ class Query(object):
         Returns:
             text formatted for print to terminal
         """
-
         if html:
             # Convert html to markdown
             text = Query.markdown(text)
@@ -106,8 +101,9 @@ class Query(object):
     @staticmethod
     def search(embeddings, cur, query, topn, threshold):
         """
-        Executes an embeddings search for the input query. Each returned result is resolved
-        to the full section row.
+        Execute an embeddings search for the input query.
+
+        Each returned result is resolved to the full section row.
 
         Args:
             embeddings: embeddings model
@@ -119,7 +115,6 @@ class Query(object):
         Returns:
             search results
         """
-
         if query == "*":
             return []
 
@@ -152,13 +147,13 @@ class Query(object):
                 sid, text = cur.fetchone()
 
                 # Add result if:
-                #   - all required tokens are present or there are not required tokens AND
-                #   - all prohibited tokens are not present or there are not prohibited tokens
+                #   - all required tokens are present or there are not required
+                # tokens AND    - all prohibited tokens are not present or there
+                # are not prohibited tokens
                 if (
-                    not must or all([token.lower() in text.lower() for token in must])
+                    not must or all(token.lower() in text.lower() for token in must)
                 ) and (
-                    not mnot
-                    or all([token.lower() not in text.lower() for token in mnot])
+                    not mnot or all(token.lower() not in text.lower() for token in mnot)
                 ):
                     # Save result
                     results.append((uid, score, sid, text))
@@ -168,8 +163,9 @@ class Query(object):
     @staticmethod
     def highlights(results, topn):
         """
-        Builds a list of highlights for the search results. Returns top ranked sections by importance
-        over the result list.
+        Build a list of highlights for the search results.
+
+        Returns top ranked sections by importance over the result list.
 
         Args:
             results: search results
@@ -178,7 +174,6 @@ class Query(object):
         Returns:
             top ranked sections
         """
-
         sections = {}
         for uid, score, _, text in results:
             # Filter out lower scored results
@@ -191,7 +186,7 @@ class Query(object):
     @staticmethod
     def documents(results, topn):
         """
-        Processes search results and groups by article.
+        Process search results and groups by article.
 
         Args:
             results: search results
@@ -200,7 +195,6 @@ class Query(object):
         Returns:
             results grouped by article
         """
-
         documents = {}
 
         # Group by article
@@ -223,7 +217,7 @@ class Query(object):
     @staticmethod
     def all(cur):
         """
-        Gets a list of all article ids.
+        Get a list of all article ids.
 
         Args:
             cur: database cursor
@@ -231,14 +225,13 @@ class Query(object):
         Returns:
             list of all ids as a dict
         """
-
         cur.execute("SELECT Id FROM articles")
         return {row[0]: None for row in cur.fetchall()}
 
     @staticmethod
     def authors(authors):
         """
-        Formats a short authors string
+        Format a short authors string
 
         Args:
             authors: full authors string
@@ -246,7 +239,6 @@ class Query(object):
         Returns:
             short author string
         """
-
         if authors:
             authors = authors.split("; ")[0]
             if "," in authors:
@@ -254,14 +246,14 @@ class Query(object):
             else:
                 authors = authors.split()[-1]
 
-            return "%s et al" % authors
+            return f"{authors} et al"
 
         return None
 
     @staticmethod
     def date(date):
         """
-        Formats a date string.
+        Format a date string.
 
         Args:
             date: input date string
@@ -269,7 +261,6 @@ class Query(object):
         Returns:
             formatted date
         """
-
         if date:
             date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
@@ -284,7 +275,7 @@ class Query(object):
     @staticmethod
     def text(text):
         """
-        Formats match text.
+        Format match text.
 
         Args:
             text: input text
@@ -292,7 +283,6 @@ class Query(object):
         Returns:
             formatted text
         """
-
         if text:
             # Remove reference links ([1], [2], etc)
             text = re.sub(r"\s*[\[(][0-9, ]+[\])]\s*", " ", text)
@@ -308,7 +298,7 @@ class Query(object):
     @staticmethod
     def design(design):
         """
-        Formats a study design field.
+        Format a study design field.
 
         Args:
             design: study design integer
@@ -316,7 +306,6 @@ class Query(object):
         Returns:
             Study Design string
         """
-
         # Study design type mapping
         mapping = {
             1: "Systematic review",
@@ -336,7 +325,7 @@ class Query(object):
     @staticmethod
     def sample(size, text):
         """
-        Formats a sample string.
+        Format a sample string.
 
         Args:
             size: Sample size
@@ -345,13 +334,12 @@ class Query(object):
         Returns:
             Formatted sample text
         """
-
         return "[%s] %s" % (size, Query.text(text)) if size else Query.text(text)
 
     @staticmethod
     def query(embeddings, db, query, topn, threshold):
         """
-        Executes a query against the embeddings model.
+        Execute a query against the embeddings model.
 
         Args:
             embeddings: embeddings model
@@ -360,7 +348,6 @@ class Query(object):
             topn: number of query results
             threshold: query match score threshold
         """
-
         # Default to 10 results if not specified
         topn = topn if topn else 10
 
@@ -388,7 +375,8 @@ class Query(object):
             documents, key=lambda k: sum([x[0] for x in documents[k]]), reverse=True
         ):
             cur.execute(
-                "SELECT Title, Published, Publication, Design, Size, Sample, Method, Entry, Id, Reference FROM articles WHERE id = ?",
+                "SELECT Title, Published, Publication, Design, Size, "
+                "Sample, Method, Entry, Id, Reference FROM articles WHERE id = ?",
                 [uid],
             )
             article = cur.fetchone()
@@ -416,7 +404,7 @@ class Query(object):
     @staticmethod
     def run(query, topn=None, path=None, threshold=None):
         """
-        Executes a query against an index.
+        Execute a query against an index.
 
         Args:
             query: input query
@@ -424,7 +412,6 @@ class Query(object):
             path: model path
             threshold: query match score threshold
         """
-
         # Load model
         embeddings, db = Models.load(path)
 

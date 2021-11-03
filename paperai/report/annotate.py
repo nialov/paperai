@@ -9,25 +9,26 @@ import re
 from txtmarker.factory import Factory
 
 from ..query import Query
-
 from .common import Report
 
 
 class Annotate(Report):
+
     """
-    Report writer for overlaying annotations on source PDFs. This format requires access to original PDFs.
+    Report writer for overlaying annotations on source PDFs.
+
+    This format requires access to original PDFs.
     """
 
     def __init__(self, embeddings, db, options):
         """
-        Creates a new report.
+        Create a new report.
 
         Args:
             embeddings: embeddings index
             db: database connection
             options: report options
         """
-
         super().__init__(embeddings, db, options)
 
         # List of all source files
@@ -39,10 +40,16 @@ class Annotate(Report):
                 self.files.append(os.path.join(root, f))
 
     def cleanup(self, outfile):
+        """
+        Delete created master csv file.
+        """
         # Delete created master csv file
         os.remove(outfile)
 
     def headers(self, columns, output):
+        """
+        Get headers.
+        """
         self.names = columns
 
         # Do not annotate following columns
@@ -64,6 +71,9 @@ class Annotate(Report):
             self.names.append("Source")
 
     def buildRow(self, article, sections, calculated):
+        """
+        Build row.
+        """
         row = {}
 
         # Date - required report field
@@ -84,6 +94,9 @@ class Annotate(Report):
         return row
 
     def writeRow(self, output, row):
+        """
+        Write row.
+        """
         # Create output directory path
         output = os.path.dirname(output.name)
 
@@ -92,13 +105,12 @@ class Annotate(Report):
 
     def annotate(self, output, row):
         """
-        Annotates source pdf using data in row.
+        Annotate source pdf using data in row.
 
         Args:
             source: source file name
             row: row with column values to provide annotations
         """
-
         # Combine header and values tuple into dict
         row = dict(zip(self.names, row))
 
@@ -133,9 +145,13 @@ class Annotate(Report):
 
     def formatter(self, text):
         """
-        Custom formatter that is passed to PDF Annotation method. This logic maps data cleansing logic in paperetl.
+        Format for PDF Annotate method.
 
-        Reference: https://github.com/neuml/paperetl/blob/master/src/python/paperetl/text.py
+        Custom formatter that is passed to PDF Annotation method. This logic
+        maps data cleansing logic in paperetl.
+
+        Reference:
+            https://github.com/neuml/paperetl/blob/master/src/python/paperetl/text.py
 
         Args:
             text: input text
@@ -143,7 +159,6 @@ class Annotate(Report):
         Returns:
             clean text
         """
-
         # List of patterns
         patterns = []
 
@@ -162,7 +177,8 @@ class Annotate(Report):
         # Remove citations references (ex. [3, 4, 5])
         patterns.append(r"\[[\d\,\s]+\]")
 
-        # Remove citations references (ex. (NUM1) repeated at least 3 times with whitespace
+        # Remove citations references (ex. (NUM1) repeated at least 3 times
+        # with whitespace
         patterns.append(r"(\(\d+\)\s){3,}")
 
         # Build regex pattern

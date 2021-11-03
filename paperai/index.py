@@ -8,37 +8,41 @@ import sys
 
 import regex as re
 import yaml
-
 from txtai.embeddings import Embeddings
 from txtai.pipeline import Tokenizer
 
 from .models import Models
 
 
-class Index(object):
+class Index:
     """
     Methods to build a new sentence embeddings index.
     """
 
     # Section query and filtering logic constants
     SECTION_FILTER = r"background|(?<!.*?results.*?)discussion|introduction|reference"
-    SECTION_QUERY = "SELECT Id, Name, Text FROM sections WHERE (labels is null or labels NOT IN ('FRAGMENT', 'QUESTION'))"
+    SECTION_QUERY = (
+        "SELECT Id, Name, Text FROM sections "
+        "WHERE (labels is null or labels NOT IN ('FRAGMENT', 'QUESTION'))"
+    )
 
     @staticmethod
     def stream(dbfile, maxsize):
         """
-        Streams documents from an articles.sqlite file. This method is a generator and will yield a row at time.
+        Stream documents from an articles.sqlite file.
+
+        This method is a generator and will yield a row at time.
 
         Args:
             dbfile: input SQLite file
             maxsize: maximum number of documents to process
         """
-
         # Connection to database file
         db = sqlite3.connect(dbfile)
         cur = db.cursor()
 
-        # Select tagged sentences without a NLP label. NLP labels are set for non-informative sentences.
+        # Select tagged sentences without a NLP label. NLP labels are set for
+        # non-informative sentences.
         query = Index.SECTION_QUERY + " AND tags is not null"
 
         if maxsize > 0:
@@ -77,7 +81,7 @@ class Index(object):
     @staticmethod
     def config(vectors):
         """
-        Builds embeddings configuration.
+        Build embeddings configuration.
 
         Args:
             vectors: path to word vectors or configuration
@@ -85,14 +89,13 @@ class Index(object):
         Returns:
             configuration
         """
-
         # Default vectors
         if not vectors:
             vectors = Models.vectorPath("cord19-300d.magnitude")
 
         # Read YAML index configuration
         if vectors.endswith(".yml"):
-            with open(vectors, "r") as f:
+            with open(vectors, "r", encoding="utf-8") as f:
                 return yaml.safe_load(f)
 
         return {"path": vectors, "scoring": "bm25", "pca": 3, "quantize": True}
@@ -100,7 +103,7 @@ class Index(object):
     @staticmethod
     def embeddings(dbfile, vectors, maxsize):
         """
-        Builds a sentence embeddings index.
+        Build a sentence embeddings index.
 
         Args:
             dbfile: input SQLite file
@@ -110,7 +113,6 @@ class Index(object):
         Returns:
             embeddings index
         """
-
         # Read config and create Embeddings instance
         embeddings = Embeddings(Index.config(vectors))
 
@@ -126,14 +128,13 @@ class Index(object):
     @staticmethod
     def run(path, vectors, maxsize=0):
         """
-        Executes an index run.
+        Execute an index run.
 
         Args:
             path: model path, if None uses default path
             vectors: path to vectors file or configuration, if None uses default path
             maxsize: maximum number of documents to process
         """
-
         # Default path if not provided
         if not path:
             path = Models.modelPath()

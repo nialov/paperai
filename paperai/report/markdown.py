@@ -3,7 +3,6 @@ Markdown report module
 """
 
 from ..query import Query
-
 from .common import Report
 
 
@@ -14,7 +13,7 @@ class Markdown(Report):
 
     def encode(self, url):
         """
-        URL encodes parens as they cause issues with markdown links.
+        URL encode parens as they cause issues with markdown links.
 
         Args:
             url: input url
@@ -22,13 +21,12 @@ class Markdown(Report):
         Returns:
             url with parens encoded
         """
-
         # Escape ()
         return url.replace("(", "%28").replace(")", "%29") if url else url
 
     def column(self, value):
         """
-        Escapes invalid characters (| char) within a table column value.
+        Escape invalid characters (| char) within a table column value.
 
         Args:
             value: input value
@@ -36,28 +34,35 @@ class Markdown(Report):
         Returns:
             value with | escaped
         """
-
         # Escape |
         return value.replace("|", "&#124;") if value else value
 
     def write(self, output, line):
         """
-        Writes line to output file.
+        Write line to output file.
 
         Args:
             output: output file
             line: line to write
         """
-
         output.write("%s\n" % line)
 
     def query(self, output, task, query):
+        """
+        Write query.
+        """
         self.write(output, "# %s" % query)
 
     def section(self, output, name):
+        """
+        Write section.
+        """
         self.write(output, "#### %s<br/>" % name)
 
     def highlight(self, output, article, highlight):
+        """
+        Write highlight.
+        """
         # Build citation link
         link = "[%s](%s)" % (
             Query.authors(article[0]) if article[0] else "Source",
@@ -68,6 +73,9 @@ class Markdown(Report):
         self.write(output, "- %s %s<br/>" % (Query.text(highlight), link))
 
     def headers(self, columns, output):
+        """
+        Write headers.
+        """
         self.names = columns
 
         # Remove extended study columns
@@ -84,6 +92,9 @@ class Markdown(Report):
         self.write(output, "|%s|" % headers)
 
     def buildRow(self, article, sections, calculated):
+        """
+        Build markdown row.
+        """
         row = {}
 
         # Date
@@ -92,7 +103,8 @@ class Markdown(Report):
         # Title
         title = "[%s](%s)" % (article[1], self.encode(article[2]))
 
-        # Append Publication if available. Assume preprint otherwise and show preprint source.
+        # Append Publication if available. Assume preprint otherwise and show
+        # preprint source.
         title += "<br/>%s" % (article[3] if article[3] else article[4])
 
         # Source
@@ -128,8 +140,14 @@ class Markdown(Report):
         return {column: self.column(row[column]) for column in row}
 
     def writeRow(self, output, row):
+        """
+        Write markdown row.
+        """
         self.write(output, "|%s|" % "|".join(row))
 
     def separator(self, output):
+        """
+        Write markdown separator.
+        """
         # Write section separator
         self.write(output, "")

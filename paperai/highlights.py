@@ -5,11 +5,10 @@ Highlights module
 import itertools
 
 import networkx
-
 from txtai.pipeline import Tokenizer
 
 
-class Highlights(object):
+class Highlights:
     """
     Methods to extract highlights from a list of text sections.
     """
@@ -63,9 +62,11 @@ class Highlights(object):
     @staticmethod
     def build(sections, topn):
         """
-        Extracts highlights from a list of sections. This method uses textrank to find sections with the highest
-        importance across the input list. This method attempts to return important but unique results to limit
-        repetitive statements.
+        Extract highlights from a list of sections.
+
+        This method uses textrank to find sections with the highest importance
+        across the input list. This method attempts to return important but
+        unique results to limit repetitive statements.
 
         Args:
             sections: input sections
@@ -74,7 +75,6 @@ class Highlights(object):
         Results:
             top n sections
         """
-
         results = []
 
         # Rank the text using textrank for importance within collection
@@ -85,9 +85,7 @@ class Highlights(object):
 
             # Compare text to existing results, look for highly unique results
             # This finds results that are important but not repetitive
-            unique = all(
-                [Highlights.jaccardIndex(t, tokens) <= 0.2 for _, t in results]
-            )
+            unique = all(Highlights.jaccardIndex(t, tokens) <= 0.2 for _, t in results)
             if unique:
                 results.append((uid, tokens))
 
@@ -99,8 +97,9 @@ class Highlights(object):
     @staticmethod
     def textrank(sections):
         """
-        Runs the textrank algorithm against the list of sections. Orders the list into descending order of importance
-        given the list.
+        Run the textrank algorithm against the list of sections.
+
+        Orders the list into descending order of importance given the list.
 
         Args:
             sections: list of sentences
@@ -108,7 +107,6 @@ class Highlights(object):
         Returns:
             sorted list using the textrank algorithm
         """
-
         # Build the graph network
         graph = Highlights.buildGraph(sections)
 
@@ -121,7 +119,7 @@ class Highlights(object):
     @staticmethod
     def buildGraph(nodes):
         """
-        Builds a graph of nodes using input.
+        Build a graph of nodes using input.
 
         Args:
             nodes: input graph nodes
@@ -129,7 +127,6 @@ class Highlights(object):
         Returns:
             graph
         """
-
         graph = networkx.Graph()
         graph.add_nodes_from([uid for (uid, _) in nodes])
 
@@ -159,7 +156,7 @@ class Highlights(object):
     @staticmethod
     def jaccardIndex(set1, set2):
         """
-        Jaccard index calculation used for similarity.
+        Calculate Jaccard index which is used for similarity.
 
         Args:
             set1: input 1
@@ -168,14 +165,15 @@ class Highlights(object):
         Returns:
             jaccard index
         """
-
         n = len(set1.intersection(set2))
         return n / float(len(set1) + len(set2) - n) if n > 0 else 0
 
     @staticmethod
     def tokenize(text):
         """
-        Tokenizes text into tokens, removes domain specific stop words.
+        Tokenize text into tokens.
+
+        Removes domain specific stop words.
 
         Args:
             text: input text
@@ -183,7 +181,6 @@ class Highlights(object):
         Returns:
             tokens
         """
-
         # Remove additional stop words to improve highlighting results
         return {
             token

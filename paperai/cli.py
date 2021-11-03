@@ -1,23 +1,25 @@
 """
 Command-line with typer.
 """
-from .models import Models
-from .query import Query
-from paperai import utils
-from typing import List, Tuple, Optional
+import logging
+import warnings
 from json import dumps
 from pathlib import Path
-from beartype import beartype
-import logging
-import typer
-from nialog.logger import setup_module_logging
-from txtai.embeddings import Embeddings
 from sqlite3 import Connection, Cursor
-from rich.table import Table
+from typing import List, Optional, Tuple
+
+import typer
+from beartype import beartype
+from nialog.logger import setup_module_logging
 from rich.console import Console
 from rich.pretty import pprint
-import warnings
+from rich.table import Table
+from txtai.embeddings import Embeddings
 
+from paperai import utils
+
+from .models import Models
+from .query import Query
 
 app = typer.Typer()
 
@@ -26,6 +28,9 @@ app = typer.Typer()
 def app_callback(
     logging_level: utils.LoggingLevel = typer.Option(utils.LoggingLevel.WARNING.value),
 ):
+    """
+    Use paperai to query articles.
+    """
     # Ignore warning:
     # Trying to unpickle estimator TruncatedSVD from version 0.24.2 when using
     # version 1.0.1. This might lead to breaking code or invalid results. Use at
@@ -96,7 +101,11 @@ def rich_print(all_results: List[utils.QueryResults]):
 
 @beartype
 def model_query(
-        query_text: str,embeddings:Embeddings,db:Connection, n: int = 10, threshold: Optional[float] = None
+    query_text: str,
+    embeddings: Embeddings,
+    db: Connection,
+    n: int = 10,
+    threshold: Optional[float] = None,
 ) -> List[utils.QueryResults]:
     """
     Query model for results.
@@ -116,7 +125,8 @@ def model_query(
         documents, key=lambda k: sum([x[0] for x in documents[k]]), reverse=True
     ):
         cur.execute(
-            "SELECT Title, Published, Publication, Design, Size, Sample, Method, Entry, Id, Reference FROM articles WHERE id = ?",
+            "SELECT Title, Published, Publication, Design, Size, "
+            "Sample, Method, Entry, Id, Reference FROM articles WHERE id = ?",
             [uid],
         )
         article = cur.fetchone()
@@ -146,13 +156,20 @@ def query_model(
     output_type: utils.OutputType = typer.Option(utils.OutputType.JSON.value),
     score_threshold: Optional[float] = typer.Option(None),
 ):
+    """
+    Query model.
+    """
     argument_dict = dict(model_path=model_path, n=n, output_type=output_type)
     if len(text) == 0:
         logging.warning("Empty text argument.", extra=argument_dict)
         return
     embeddings, db = load_model(model_path=model_path)
     query_results = model_query(
-        query_text=text, model_path=model_path, n=n, threshold=score_threshold, embeddings=embeddings, db=db
+        query_text=text,
+        n=n,
+        threshold=score_threshold,
+        embeddings=embeddings,
+        db=db,
     )
 
     if output_type == utils.OutputType.JSON:
@@ -166,6 +183,9 @@ def query_model(
 def preview_doi(
     doi: str = typer.Argument(""),
 ):
+    """
+    Preview doi.
+    """
     if len(doi) == 0:
         print("Empty DOI.")
     print(doi)

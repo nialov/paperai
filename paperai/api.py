@@ -17,7 +17,7 @@ class API(txtai.api.API):
 
     def search(self, query, request):
         """
-        Extends txtai API to enrich results with content.
+        Extend txtai API to enrich results with content.
 
         Args:
             query: query text
@@ -26,7 +26,6 @@ class API(txtai.api.API):
         Returns:
             query results
         """
-
         if self.embeddings:
             dbfile = os.path.join(self.config["path"], "articles.sqlite")
             limit = self.limit(request.query_params.get("limit"))
@@ -54,7 +53,8 @@ class API(txtai.api.API):
                     reverse=True,
                 ):
                     cur.execute(
-                        "SELECT Title, Published, Publication, Design, Size, Sample, Method, Entry, Id, Reference "
+                        "SELECT Title, Published, Publication, Design, "
+                        "Size, Sample, Method, Entry, Id, Reference "
                         + "FROM articles WHERE id = ?",
                         [uid],
                     )

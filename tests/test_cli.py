@@ -2,14 +2,17 @@
 Tests for cli.py.
 """
 
-from typer.testing import CliRunner
 from traceback import print_tb
-from click.testing import Result
+
 import pytest
-from paperai import cli
+from click.testing import Result
+from typer.testing import CliRunner
+
 import tests
+from paperai import cli
 
 runner = CliRunner()
+
 
 def click_error_print(result: Result):
     """
@@ -24,11 +27,11 @@ def click_error_print(result: Result):
     print(result.output)
     raise Exception(result.exception)
 
+
 @pytest.mark.parametrize("subcommand,args", tests.test_app_params())
-def test_app(subcommand,args):
+def test_app(subcommand, args):
     """
     Test app.
     """
     result = runner.invoke(cli.app, [subcommand, *args])
     click_error_print(result=result)
-

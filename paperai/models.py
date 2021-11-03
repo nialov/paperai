@@ -2,10 +2,10 @@
 Models module
 """
 
+import logging
 import os
 import os.path
 import sqlite3
-import logging
 from pathlib import Path
 
 from txtai.embeddings import Embeddings
@@ -14,7 +14,7 @@ ARTICLES_SQLITE_NAME = "articles.sqlite"
 CONFIG_NAME = "config"
 
 
-class Models(object):
+class Models:
     """
     Common methods for generating data paths.
     """
@@ -22,7 +22,7 @@ class Models(object):
     @staticmethod
     def basePath(create=False):
         """
-        Base data path - ~/.cord19
+        Get base data path - ~/.cord19.
 
         Args:
             create: if directory should be created
@@ -30,7 +30,6 @@ class Models(object):
         Returns:
             path
         """
-
         # Get model cache path
         path = os.path.join(os.path.expanduser("~"), ".cord19")
 
@@ -43,7 +42,7 @@ class Models(object):
     @staticmethod
     def modelPath(create=False):
         """
-        Model path for name
+        Get model path for name.
 
         Args:
             create: if directory should be created
@@ -51,7 +50,6 @@ class Models(object):
         Returns:
             path
         """
-
         path = os.path.join(Models.basePath(), "models")
 
         # Create directory if required
@@ -63,7 +61,7 @@ class Models(object):
     @staticmethod
     def vectorPath(name, create=False):
         """
-        Vector path for name
+        Get vector path for name.
 
         Args:
             name: vectors name
@@ -72,7 +70,6 @@ class Models(object):
         Returns:
             path
         """
-
         path = os.path.join(Models.basePath(), "vectors")
 
         # Create directory path if required
@@ -85,7 +82,7 @@ class Models(object):
     @staticmethod
     def load(path):
         """
-        Loads an embeddings model and db database.
+        Load an embeddings model and db database.
 
         Args:
             path: model path, if None uses default path
@@ -93,7 +90,6 @@ class Models(object):
         Returns:
             (embeddings, db handle)
         """
-
         # Default path if not provided
         if not path:
             path = Models.modelPath()
@@ -115,7 +111,7 @@ class Models(object):
     @staticmethod
     def load_path(path: Path):
         """
-        Loads an embeddings model and db database.
+        Load an embeddings model and db database.
 
         Args:
             path: model path, if None uses default path
@@ -123,7 +119,6 @@ class Models(object):
         Returns:
             (embeddings, db handle)
         """
-
         if not path.is_dir():
             raise FileExistsError(
                 f"Expected path to be a directory with {ARTICLES_SQLITE_NAME} file."
@@ -150,11 +145,10 @@ class Models(object):
     @staticmethod
     def close(db):
         """
-        Closes a SQLite database database.
+        Close a SQLite database.
 
         Args:
             db: open database
         """
-
         # Free database resources
         db.close()

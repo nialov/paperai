@@ -7,7 +7,7 @@ import os
 import yaml
 
 
-class Task(object):
+class Task:
     """
     YAML task configuration loader
     """
@@ -15,7 +15,9 @@ class Task(object):
     @staticmethod
     def load(task):
         """
-        Loads a YAML configuration. Supports loading from a string or file path.
+        Load a YAML configuration.
+
+        Supports loading from a string or file path.
 
         Args:
             task: YAML string or file path to YAML configuration
@@ -23,7 +25,6 @@ class Task(object):
         Returns:
             (name, queries, output directory)
         """
-
         if os.path.exists(task):
             # Load tasks yml file
             with open(task, "r") as f:
@@ -45,7 +46,7 @@ class Task(object):
     @staticmethod
     def queries(config):
         """
-        Gets a list of queries from this configuration.
+        Get a list of queries from this configuration.
 
         Args:
             config: configuration object
@@ -53,7 +54,6 @@ class Task(object):
         Returns:
             list of queries
         """
-
         queries = []
 
         for key, value in config.items():
@@ -69,7 +69,7 @@ class Task(object):
     @staticmethod
     def flatten(columns):
         """
-        Flattens nested lists into a single list.
+        Flatten nested lists into a single list.
 
         Args:
             columns: list of columns, possibly with nested lists
@@ -77,7 +77,6 @@ class Task(object):
         Returns:
             flattened list of columns
         """
-
         output = []
         for column in columns:
             if isinstance(column, list):
