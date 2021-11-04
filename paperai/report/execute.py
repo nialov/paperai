@@ -34,9 +34,9 @@ class Execute:
         """
         if render == "ant":
             return Annotate(embeddings, db, options)
-        elif render == "csv":
+        if render == "csv":
             return CSV(embeddings, db, options)
-        elif render == "md":
+        if render == "md":
             return Markdown(embeddings, db, options)
 
         return None

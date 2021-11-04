@@ -114,6 +114,5 @@ class CSV(Report):
 
     def writeRow(self, output, row):
         """
-        Write csv row.
-        """
+        Write csv row."""
         self.write(row)

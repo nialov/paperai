@@ -137,7 +137,7 @@ class Markdown(Report):
         row.update(calculated)
 
         # Escape | characters embedded within columns
-        return {column: self.column(row[column]) for column in row}
+        return {key: self.column(value) for key, value in row.items()}
 
     def writeRow(self, output, row):
         """

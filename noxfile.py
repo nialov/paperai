@@ -187,10 +187,7 @@ def format_and_lint(session):
     )
 
     # Lint with pylint
-    session.run(
-        "pylint",
-        *existing_paths,
-    )
+    session.run("pylint", *existing_paths, "--fail-under=9.5")
 
     for notebook in ALL_NOTEBOOKS:
         # Lint notebooks with black-nb (all should be formatted.)
@@ -450,3 +447,20 @@ def changelog(session):
     print(changelog_path.read_text(UTF8))
 
     assert changelog_path.exists()
+
+
+@nox.session(reuse_venv=True)
+def pretest(session):
+    """
+    Download pretest material.
+    """
+    pretest_dir = Path("/tmp/paperai")
+    pretest_dir.mkdir(exist_ok=True, parents=True)
+
+    session.run(
+        "wget",
+        "-N",
+        "https://github.com/neuml/paperai/releases/download/v1.3.0/tests.tar.gz",
+        "-P",
+        "/tmp",
+    )

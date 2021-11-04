@@ -97,7 +97,7 @@ class Models:
         dbfile = os.path.join(path, "articles.sqlite")
 
         if os.path.isfile(os.path.join(path, "config")):
-            logging.info("Loading model from %s" % path)
+            logging.info(f"Loading model from {path}")
             embeddings = Embeddings()
             embeddings.load(path)
         else:

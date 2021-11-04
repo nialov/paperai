@@ -79,28 +79,6 @@ jobs:
       - name: Build docs with invoke -> nox session
         run: invoke docs
 
-  citation:
-    runs-on: ubuntu-latest
-    name: Build citation and validate it
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 🐍
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install nox invoke
-      - name: Cache .nox
-        uses: actions/cache@v2
-        with:
-          path: .nox
-          key: ${{ runner.os }}-nox-${{ hashFiles('noxfile.py') }}-${{ hashFiles('poetry.lock') }}-citation
-      - name: Build docs with invoke -> nox session
-        run: invoke citation
-    
-
   build-and-publish:
     runs-on: ubuntu-latest
     # Requires that unit tests pass but doesn't require lints
@@ -120,13 +98,13 @@ jobs:
       - name: Build binary wheel and a source tarball
         run: >-
           invoke build
-      - name: Publish distribution 📦 to PyPI on tagged commit pushes
-        # Publish to PyPI on tagged commit pushes on master
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_PASSWORD }}
+      # - name: Publish distribution 📦 to PyPI on tagged commit pushes
+      #   # Publish to PyPI on tagged commit pushes on master
+      #   if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      #   uses: pypa/gh-action-pypi-publish@master
+      #   with:
+      #     user: __token__
+      #     password: ${{ secrets.PYPI_PASSWORD }}
 
   release:
     runs-on: ubuntu-latest
@@ -143,12 +121,12 @@ jobs:
       - name: Echo RELEASE_CHANGELOG.md
         run: cat RELEASE_CHANGELOG.md
 
-      - name: Publish release on GitHub
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            RELEASE_CHANGELOG.md
-          body_path: RELEASE_CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Publish release on GitHub
+      #   if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: |
+      #       RELEASE_CHANGELOG.md
+      #     body_path: RELEASE_CHANGELOG.md
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -11,13 +11,11 @@ from time import strftime
 from invoke import task
 
 PACKAGE_NAME = "paperai"
-CITATION_CFF_PATH = Path("CITATION.cff")
 DATE_RELEASED_STR = "date-released"
 UTF8 = "utf-8"
 
 VERSION_GLOBS = [
     "*/__init__.py",
-    "CITATION.cff",
     "pyproject.toml",
 ]
 
@@ -48,7 +46,32 @@ def update_version(c):
     c.run("nox --session update_version")
 
 
-@task(pre=[requirements, update_version])
+@task
+def pretest(c):
+    """
+    Download test material.
+    """
+    pretest_dir = Path("/tmp/paperai")
+
+    if not pretest_dir.exists():
+        pretest_dir.mkdir(exist_ok=False, parents=True)
+        c.run(
+            " ".join(
+                [
+                    "wget",
+                    "-N",
+                    "https://github.com/neuml/paperai/releases/"
+                    "download/v1.3.0/tests.tar.gz",
+                    "-P",
+                    "/tmp",
+                ]
+            )
+        )
+
+        c.run("tar -xvzf /tmp/tests.tar.gz -C /tmp")
+
+
+@task(pre=[pretest, requirements, update_version])
 def ci_test(c, python=""):
     """
     Test suite for continous integration testing.
@@ -60,12 +83,12 @@ def ci_test(c, python=""):
 
 
 @task(pre=[requirements, update_version])
-def docs(c):
+def docs(_):
     """
     Make documentation to docs using nox.
     """
-    print("Making documentation.")
-    c.run("nox --session docs")
+    print("Not making documentation.")
+    # c.run("nox --session docs")
 
 
 @task(pre=[requirements])
@@ -78,12 +101,13 @@ def notebooks(c):
 
 
 @task(pre=[requirements, update_version])
-def build(c):
+def build(_):
     """
     Build package with poetry.
     """
-    print("Building package with poetry.")
-    c.run("nox --session build")
+    print("Building disabled.")
+    # print("Building package with poetry.")
+    # c.run("nox --session build")
 
 
 @task(pre=[requirements])
@@ -105,30 +129,6 @@ def performance_profile(c):
 
 
 @task
-def citation(c):
-    """
-    Sync and validate CITATION.cff.
-    """
-    print("Updating CITATION.cff date")
-    citation_text = CITATION_CFF_PATH.read_text(UTF8)
-    citation_lines = citation_text.splitlines()
-    if DATE_RELEASED_STR not in citation_text:
-        raise ValueError(
-            f"Expected to find {DATE_RELEASED_STR} str in {CITATION_CFF_PATH}."
-            f"\nCheck & validate {CITATION_CFF_PATH}."
-        )
-    date = strftime("%Y-%m-%d")
-    new_lines = [
-        line if "date-released" not in line else f'date-released: "{date}"'
-        for line in citation_lines
-    ]
-    CITATION_CFF_PATH.write_text("\n".join(new_lines), encoding=UTF8)
-
-    print("Validating CITATION.cff")
-    c.run("nox --session validate_citation_cff")
-
-
-@task
 def changelog(c, latest_version=""):
     """
     Generate changelog.
@@ -138,14 +138,13 @@ def changelog(c, latest_version=""):
 
 @task(
     pre=[
+        pretest,
         requirements,
         update_version,
         format_and_lint,
-        ci_test,
+        # ci_test,
         build,
         docs,
-        citation,
-        changelog,
     ]
 )
 def prepush(_):
@@ -182,7 +181,7 @@ def pre_commit(c, only_run=False, only_install=False):
 @task(pre=[prepush], post=[pre_commit])
 def tag(c, tag="", annotation=""):
     """
-    Make new tag and update version strings accordingly
+    Make new tag and update version strings accordingly.
     """
     if len(tag) == 0:
         raise ValueError("Tag string must be specified with '--tag=*'.")
@@ -235,6 +234,7 @@ def tag(c, tag="", annotation=""):
 
 @task(
     pre=[
+        pretest,
         prepush,
         notebooks,
         typecheck,
