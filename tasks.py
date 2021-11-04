@@ -142,7 +142,7 @@ def changelog(c, latest_version=""):
         requirements,
         update_version,
         format_and_lint,
-        # ci_test,
+        ci_test,
         build,
         docs,
     ]
